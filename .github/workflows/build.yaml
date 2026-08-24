@@ -4,6 +4,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-slim
+    timeout-minutes: 360
     permissions:
       contents: write
 

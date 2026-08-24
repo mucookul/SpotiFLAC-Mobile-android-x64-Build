@@ -39,8 +39,7 @@ jobs:
           cmdline-tools-version: 15859902
 
       - run: |
-          yes | sdkmanager --licenses
-          sdkmanager "ndk;29.0.14206865" "platforms;android-37.0" "build-tools;37.0.0"
+          android sdk "ndk;29.0.14206865" "platforms;android-37.0" "build-tools;37.0.0"
 
       - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:

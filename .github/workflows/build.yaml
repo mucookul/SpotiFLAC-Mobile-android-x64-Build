@@ -24,7 +24,7 @@ jobs:
           cache-jdk: true
 
       - run: |
-          echo "ANDROID_SDK_ROOT=/usr/local/lib/android/sdk" >> $GITHUB_ENV
+          echo "ANDROID_SDK_ROOT=$HOME/.android/sdk" >> $GITHUB_ENV
 
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:

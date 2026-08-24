@@ -1,0 +1,55 @@
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-slim
+    permissions:
+      contents: write
+
+    steps:
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          channel: stable
+          flutter-version-file: .fvmrc
+    
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go_backend/go.mod
+
+      - uses: android-actions/setup-android@40fd30fb8d7440372e1316f5d1809ec01dcd3699 # v4.0.1
+        with:
+          cmdline-tools-version: 15859902
+
+      - run: |
+          yes | sdkmanager --licenses
+          sdkmanager "ndk;29.0.14206865" "platforms;android-37" "build-tools;37.0.0"
+
+      - uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6.0.0
+        with:
+          distribution: temurin
+          java-version: "25"
+    
+      - run: |
+          curl -LO https://github.com/spotiflacapp/SpotiFLAC-Mobile/archive/refs/heads/main.tar.gz
+          tar -xf main.tar.gz
+
+      - working-directory: SpotiFLAC-Mobile-main/go_backend
+        run: |
+          go install golang.org/x/mobile/cmd/gomobile
+          gomobile init
+          mkdir -p ../android/app/libs
+          gomobile bind -target=android/amd64 -androidapi 24 -o ../android/app/libs/gobackend.aar .
+        env:
+          CGO_ENABLED: 1
+
+      - working-directory: SpotiFLAC-Mobile-main
+        run: |
+          flutter pub get
+          dart run flutter_launcher_icons
+          flutter build apk --release --target-platform android-x64
+
+      - env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create SpotiFLAC-Mobile-main ./SpotiFLAC-Mobile-main/build/app/outputs/flutter-apk/app-x86_64-release.apk --draft --repo $GITHUB_REPOSITORY

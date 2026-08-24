@@ -8,14 +8,18 @@ jobs:
       contents: write
 
     steps:
+      - run: |
+          curl -LO https://github.com/spotiflacapp/SpotiFLAC-Mobile/archive/refs/heads/main.tar.gz
+          tar -xf main.tar.gz
+    
       - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
           channel: stable
-          flutter-version-file: .fvmrc
+          flutter-version-file: SpotiFLAC-Mobile-main/.fvmrc
     
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version-file: go_backend/go.mod
+          go-version-file: SpotiFLAC-Mobile-main/go_backend/go.mod
 
       - uses: android-actions/setup-android@40fd30fb8d7440372e1316f5d1809ec01dcd3699 # v4.0.1
         with:
@@ -29,10 +33,6 @@ jobs:
         with:
           distribution: temurin
           java-version: "25"
-    
-      - run: |
-          curl -LO https://github.com/spotiflacapp/SpotiFLAC-Mobile/archive/refs/heads/main.tar.gz
-          tar -xf main.tar.gz
 
       - working-directory: SpotiFLAC-Mobile-main/go_backend
         run: |

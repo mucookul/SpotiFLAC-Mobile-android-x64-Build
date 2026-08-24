@@ -11,15 +11,28 @@ jobs:
       - run: |
           curl -LO https://github.com/spotiflacapp/SpotiFLAC-Mobile/archive/refs/heads/main.tar.gz
           tar -xf main.tar.gz
-    
-      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
-        with:
-          channel: stable
-          flutter-version-file: SpotiFLAC-Mobile-main/.fvmrc
-    
+
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version-file: SpotiFLAC-Mobile-main/go_backend/go.mod
+          cache-dependency-path: SpotiFLAC-Mobile-main/go_backend/go.sum
+
+      - uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6.0.0
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache-jdk: true
+
+      - run: |
+          echo "ANDROID_SDK_ROOT=/usr/local/lib/android/sdk" >> $GITHUB_ENV
+
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            $ANDROID_SDK_ROOT/platforms/android-37
+            $ANDROID_SDK_ROOT/build-tools/37.0.0
+            $ANDROID_SDK_ROOT/ndk/29.0.14206865
+          key: platform37-build37-ndk29
 
       - uses: android-actions/setup-android@40fd30fb8d7440372e1316f5d1809ec01dcd3699 # v4.0.1
         with:
@@ -29,10 +42,11 @@ jobs:
           yes | sdkmanager --licenses
           sdkmanager "ndk;29.0.14206865" "platforms;android-37" "build-tools;37.0.0"
 
-      - uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6.0.0
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
-          distribution: temurin
-          java-version: "25"
+          channel: stable
+          flutter-version-file: SpotiFLAC-Mobile-main/.fvmrc
+          cache: true
 
       - working-directory: SpotiFLAC-Mobile-main/go_backend
         run: |

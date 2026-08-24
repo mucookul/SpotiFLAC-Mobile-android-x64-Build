@@ -21,7 +21,7 @@ jobs:
         with:
           distribution: temurin
           java-version: "25"
-          cache-jdk: true
+          cache: gradle
 
       - run: |
           echo "ANDROID_SDK_ROOT=$HOME/.android/sdk" >> $GITHUB_ENV

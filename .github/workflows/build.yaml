@@ -23,10 +23,30 @@ jobs:
           go-version-file: SpotiFLAC-Mobile-main/go_backend/go.mod
           cache-dependency-path: SpotiFLAC-Mobile-main/go_backend/go.sum
 
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: gradle-
+
       - run: |
           echo "ANDROID_NDK=/usr/local/lib/android/sdk/ndk/29.0.14206865" >> $GITHUB_ENV
           echo "ANDROID_NDK_HOME=/usr/local/lib/android/sdk/ndk/29.0.14206865" >> $GITHUB_ENV
           echo "ANDROID_NDK_ROOT=/usr/local/lib/android/sdk/ndk/29.0.14206865" >> $GITHUB_ENV
+
+      - working-directory: SpotiFLAC-Mobile-main/go_backend
+        run: |
+          go install golang.org/x/mobile/cmd/gomobile
+          gomobile init
+
+      - working-directory: SpotiFLAC-Mobile-main/go_backend
+        run: |
+          mkdir -p ../android/app/libs
+          gomobile bind -target=android/amd64 -androidapi 24 -o ../android/app/libs/gobackend.aar .
+        env:
+          CGO_ENABLED: 1
 
       - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
@@ -34,22 +54,19 @@ jobs:
           flutter-version-file: SpotiFLAC-Mobile-main/.fvmrc
           cache: true
 
-      - working-directory: SpotiFLAC-Mobile-main/go_backend
-        run: |
-          go install golang.org/x/mobile/cmd/gomobile
-          gomobile init
-          mkdir -p ../android/app/libs
-          gomobile bind -target=android/amd64 -androidapi 24 -o ../android/app/libs/gobackend.aar .
-        env:
-          CGO_ENABLED: 1
-
       - working-directory: SpotiFLAC-Mobile-main
         run: |
           flutter pub get
+
+      - working-directory: SpotiFLAC-Mobile-main
+        run: |
           dart run flutter_launcher_icons
+
+      - working-directory: SpotiFLAC-Mobile-main
+        run: |
           flutter build apk --release --target-platform android-x64
 
       - env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create SpotiFLAC-Mobile-main ./SpotiFLAC-Mobile-main/build/app/outputs/flutter-apk/app-x86_64-release.apk --draft --repo $GITHUB_REPOSITORY
+          gh release create SpotiFLAC-Mobile-main ./SpotiFLAC-Mobile-main/build/app/outputs/flutter-apk/app-release.apk --draft --repo $GITHUB_REPOSITORY
